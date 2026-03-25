@@ -1,0 +1,11 @@
+[Unit]
+Description=Case LED indication of system reboot
+Before=reboot.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=bash -c "i2ctransfer -y 0 w2@0x23 0x0 0x0 w2@0x23 0x2 0x0 w2@0x23 0x3 0x0 w2@0x23 0x4 0x0 w2@0x23 0x5 0x0; echo 'bootloader' | cmp -s /run/systemd/reboot-param && i2ctransfer -y 0 w2@0x23 0x2 0x22; echo 'ums' | cmp -s /run/systemd/reboot-param && i2ctransfer -y 0 w2@0x23 0x4 0x4 w2@0x23 0x5 0x20; echo 'maskrom' | cmp -s /run/systemd/reboot-param && i2ctransfer -y 0 w2@0x23 0x3 0x8 w2@0x23 0x4 0x10; echo 'loader' | cmp -s /run/systemd/reboot-param && i2ctransfer -y 0 w2@0x23 0x3 0x18 w2@0x23 0x5 0x6; test ! -e /run/systemd/reboot-param && i2ctransfer -y 0 w2@0x23 0x4 0x16 w2@0x23 0x5 0x13; while [ \"$(systemctl is-active 'umount.target')\" != 'active' ]; do i2ctransfer -y 0 w2@0x23 0x0 0x1 && sleep 0.5 && i2ctransfer -y 0 w2@0x23 0x0 0x0 && sleep 0.5; done; echo 'maskrom' | cmp -s /run/systemd/reboot-param && i2ctransfer -y 0 w2@23 0x0 0x1"
+
+[Install]
+WantedBy=reboot.target

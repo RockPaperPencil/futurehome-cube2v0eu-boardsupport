@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/* 
+ * Enable the Mighty Gecko chip (EFR32MG12) in the Futurehome cube-2v0-eu
+ * by supplying power to it. Split out to an overlay because it might not
+ * be desirable to automatically enable the chip on boot in all scenarios.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+
+/ {
+    fragment@0 {
+        target = <&onboard_efr32mg12>;
+        __overlay__ {
+            enable-active-high;
+            gpio = <&gpio1 RK_PA5 GPIO_ACTIVE_HIGH>;
+            pinctrl-0 = <&onboard_efr32mg12_powered>,
+			 		<&onboard_efr32mg12_pa4>,
+			 		<&onboard_efr32mg12_reset>;
+        };
+    };
+};

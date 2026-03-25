@@ -1,0 +1,11 @@
+[Unit]
+Description=Case LED indication of system boot status 
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStartPre=bash -c "i2ctransfer -y 0 w2@0x23 0x2 0x0 w2@0x23 0x3 0x22 w2@0x23 0x4 0x0 w2@0x23 0x5 0x0"
+ExecStart=bash -c "while [ \"$(systemctl is-active getty.target)\" != \"active\" ]; do i2ctransfer -y 0 w2@0x23 0x0 0x0 && sleep 0.6 && i2ctransfer -y 0 w2@0x23 0x0 0x1 && sleep 0.6; done"
+
+[Install]
+WantedBy=sysinit.target

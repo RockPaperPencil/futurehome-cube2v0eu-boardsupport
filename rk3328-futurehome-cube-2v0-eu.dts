@@ -1,0 +1,556 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/* Some of this file, mostly the rk808 section and some regulator definitions
+ * is either borrowed from or based on free and open source works by 
+ * Fuzhou Rockchip Electronics Co., Ltd and Armbian developers.
+ */
+/dts-v1/;
+#include <dt-bindings/pinctrl/rockchip.h>
+#include <dt-bindings/soc/rockchip,boot-mode.h>
+
+#include "rk3328.dtsi"
+
+/ {
+    model = "Futurehome cube-2v0-eu";
+    compatible = "futurehome,cube-2v0-eu", "rockchip,rk3328";
+
+    aliases {
+        ethernet0 = &gmac2phy;
+		mmc0 = &emmc;
+	};
+
+    chosen {
+		stdout-path = "serial2:1500000n8";
+	};
+
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+		
+        smbios {
+			system {
+				manufacturer = "Futurehome";
+                family = "Smarthub";
+				product = "cube-2v0-eu";
+			};
+
+			baseboard {
+				manufacturer = "Dusun";
+				product = "CDGW-001 (DSOM-010R SoM, RK3328)";
+			};
+
+			chassis {
+				manufacturer = "Dusun";
+				product = "DS339-1/DS339-2";
+			};
+		};
+	};
+
+    vcc_sys: vcc-sys {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_sys";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+
+	vdd_5v0: vdd-5v0 {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd_5v0";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		vin-supply = <&vcc_sys>;
+	};
+
+	vdd_3v3: vdd-3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd_3v3";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&vcc_sys>;
+	};
+
+    vcc_phy: vcc-phy-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_phy";
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	// Controls power to the dwc3/USB-A port through HM4610H IC
+	usb_typea_pwr: usb-typea-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "usb_typea_pwr";
+		enable-active-high;
+		gpio = <&gpio0 RK_PA2 GPIO_ACTIVE_HIGH>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&vdd_5v0>;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+
+	onboard_efr32mg12: onboard-efr32mg12 {
+		compatible = "regulator-fixed";
+		regulator-name = "onboard_efr32mg12";
+		vin-supply = <&vdd_3v3>;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-boot-on;
+		regulator-always-on;
+		
+		// This regulator is *actually* active-high. It is just set up this
+		// way as a workaround to make sure the chip is disabled by default
+		// by not leaving GPIO1_PA5 floating. See/use overlay to enable the
+		// chip when the kernel boots.
+		gpio = <&gpio1 RK_PA5 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&onboard_efr32mg12_unpowered>,
+					<&onboard_efr32mg12_reset>,
+					<&onboard_efr32mg12_pa4>;
+	};
+
+	onboard_efr32bg22: onboard-efr32bg22 {
+		compatible = "regulator-fixed";
+		regulator-name = "onboard_efr32bg22";
+		vin-supply = <&vdd_3v3>;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-boot-on;
+		regulator-always-on;
+
+		// This regulator is *actually* active-high. It is just set up this
+		// way as a workaround to make sure the chip is disabled by default
+		// by not leaving GPIO2_PC1 floating. See/use overlay to enable the
+		// chip when the kernel boots.
+		gpio = <&gpio2 RK_PC1 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&onboard_efr32bg22_unpowered>,
+					<&onboard_efr32bg22_reset>;
+	};
+
+	onboard_zgm130s: onboard-zgm130s {
+		compatible = "regulator-fixed";
+		regulator-name = "onboard_zgm130s";
+		vin-supply = <&vdd_3v3>;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-boot-on;
+		regulator-always-on;
+
+		// This regulator is *actually* active-high. It is just set up this
+		// way as a workaround to make sure the chip is disabled by default
+		// by not leaving GPIO2_PB7 floating. See/use overlay to enable the
+		// chip when the kernel boots.
+		gpio = <&gpio2 RK_PB7 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&onboard_zgm130s_unpowered>,
+					<&onboard_zgm130s_reset>;
+	};
+};
+
+&gpio0 {
+	gpio-line-names =
+		/* GPIO0_A0 - A7 */
+		"bottom-connector (TP38) [GPIO0_A0]", "", "USB-A power enable", "bottom-connector (TP36) [GPIO0_A3]", "", "", "", "",
+		/* GPIO0_B0 - B7 */
+		"", "", "", "", "", "", "", "",
+		/* GPIO0_C0 - C7 */
+		"", "", "", "", "", "", "", "",
+		/* GPIO0_D0 - D7 */
+		"", "", "", "bottom-connector (TP39) [GPIO0_D3]", "", "", "bottom-connector (TP37) [GPIO0_D6]", "";
+};
+
+&gpio1 {
+	gpio-line-names =
+		/* GPIO1_A0 - A7 */
+		"EFR32MG12 nRESET [GPIO1_A0]", "", "", "EFR32MG12 PA4 [GPIO1_A3]", "", "EFR32MG12 power enable [GPIO1_A5]", "", "",
+		/* GPIO1_B0 - B7 */
+		"", "", "", "", "", "", "", "",
+		/* GPIO1_C0 - C7 */
+		"", "", "", "", "", "", "", "",
+		/* GPIO1_D0 - D7 */
+		"", "", "", "", "", "", "", "";
+};
+
+&gpio2 {
+	gpio-line-names =
+		/* GPIO2_A0 - A7 */
+		"", "", "",
+		"", "", "",
+		"", "",
+		/* GPIO2_B0 - B7 */
+		"", "", "", "", "", "", "", "ZGM130S power enable [GPIO2_B7]",
+		/* GPIO2_C0 - C7 */
+		"", "EFR32BG22 power enable [GPIO2_C1]", "EFR32BG22 RESETn [GPIO2_C2]",
+		"", "", "",
+		"", "",
+		/* GPIO2_D0 - D7 */
+		"", "", "", "", "", "", "", "";
+};
+
+&gpio3 {
+	gpio-line-names =
+		/* GPIO3_A0 - A7 */
+		"Function button [GPIO3_A0]", "", "",
+		"", "", "", "", "ZGM130S RESET [GPIO3_A7]",
+		/* GPIO3_B0 - B7 */
+		"", "", "", "", "", "", "", "",
+		/* GPIO3_C0 - C7 */
+		"", "", "", "", "", "", "", "",
+		/* GPIO3_D0 - D7 */
+		"", "", "", "", "", "", "", "";
+};
+
+
+&usbdrd3 {
+	dr_mode = "host";
+	status = "okay";
+	portpwr-supply = <&usb_typea_pwr>;
+};
+
+&u2phy {
+    status = "okay";
+};
+
+&u2phy_host {
+    status = "okay";
+};
+
+&u2phy_otg {
+    status = "okay";
+};
+
+&usb20_otg {
+    status = "okay";
+	dr_mode = "peripheral";
+};
+
+&usb_host0_ehci {
+    status = "okay";
+};
+
+&usb_host0_ohci {
+    status = "okay";
+};
+
+&tsadc {
+	status = "okay";
+};
+
+&cpu0 {
+    cpu-supply = <&vdd_arm>;
+};
+
+&cpu1 {
+    cpu-supply = <&vdd_arm>;
+};
+
+&cpu2 {
+    cpu-supply = <&vdd_arm>;
+};
+
+&cpu3 {
+    cpu-supply = <&vdd_arm>;
+};
+
+&emmc {
+    bus-width = <8>;
+    cap-mmc-highspeed;
+    mmc-hs200-1_8v;
+    disable-wp;
+    non-removable;
+    pinctrl-names = "default";
+    pinctrl-0 = <&emmc_clk &emmc_cmd &emmc_bus8>;
+    status = "okay";
+};
+
+&gmac2phy {
+	phy-supply = <&vcc_phy>;
+	clock_in_out = "output";
+	assigned-clock-rate = <50000000>;
+	assigned-clocks = <&cru SCLK_MAC2PHY>;
+	assigned-clock-parents = <&cru SCLK_MAC2PHY_SRC>;
+	status = "okay";
+};
+
+// Remove ethernet LED pin assignments defined in rk3328.dtsi; the smarthub does
+// not have any of them. Besides, fephyled_txm1 and fephyled_linkm1 is 
+// same physical pins as the I2C0 bus, resulting in conflict.
+&phy {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+};
+// Get rid of all pinctrl fephyled entries in one fell swoop as gmac2phy
+// only contain fephyled stuff.
+&pinctrl{
+	/delete-node/ gmac2phy; 
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&i2c1 {
+	status = "okay";
+
+	pcf85063a: rtc@51 {
+		compatible = "nxp,pcf85063a";
+		reg = <0x51>;
+		status = "okay";
+
+		clock {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
+		};
+	};
+
+	rk805: rk805@18 {
+		status = "okay";
+		compatible = "rockchip,rk805";
+		reg = <0x18>;
+		interrupt-parent = <&gpio2>;
+		interrupts = <6 IRQ_TYPE_LEVEL_LOW>;
+		#clock-cells = <1>;
+		clock-output-names = "xin32k", "rk805-clkout2";
+		gpio-controller;
+		#gpio-cells = <2>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pmic_int_l>, <&pmic_sleep_l>;
+		rockchip,system-power-controller;
+		wakeup-source;
+
+		vcc1-supply = <&vcc_sys>;
+		vcc2-supply = <&vcc_sys>;
+		vcc3-supply = <&vcc_sys>;
+		vcc4-supply = <&vcc_sys>;
+		vcc5-supply = <&vcc_io>;
+		vcc6-supply = <&vcc_sys>;
+
+		rtc {
+			status = "disabled";
+			// This only works for vendor kernels, not mainline
+		};
+
+		regulators {
+			compatible = "rk805-regulator";
+			status = "okay";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			vdd_logic: DCDC_REG1 {
+				regulator-name = "vdd_log";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1100000>;
+				regulator-max-microvolt = <1450000>;
+				regulator-ramp-delay = <12500>;
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1000000>;
+				};
+			};
+
+			vdd_arm: DCDC_REG2 {
+				regulator-name = "vdd_arm";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <712500>;
+				regulator-max-microvolt = <1450000>;
+				regulator-ramp-delay = <12500>;
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <950000>;
+				};
+			};
+
+			vcc_ddr: DCDC_REG3 {
+				regulator-name = "vcc_ddr";
+				regulator-always-on;
+				regulator-boot-on;
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+				};
+			};
+
+			vcc_io: DCDC_REG4 {
+				regulator-name = "vcc_io";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <3300000>;
+				};
+			};
+
+			vcc_18: LDO_REG1 {
+				regulator-name = "vcc_18";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1800000>;
+				};
+			};
+
+			vcc18_emmc: LDO_REG2 {
+				regulator-name = "vcc18_emmc";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1800000>;
+				};
+			};
+
+			vdd_10: LDO_REG3 {
+				regulator-name = "vdd_10";
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1000000>;
+				regulator-max-microvolt = <1000000>;
+
+				regulator-state-mem {
+					regulator-on-in-suspend;
+					regulator-suspend-microvolt = <1000000>;
+				};
+			};
+		};
+	};
+};
+
+&io_domains {
+	pmuio-supply = <&vcc_io>;
+	vccio1-supply = <&vcc_io>;
+	vccio2-supply = <&vcc18_emmc>;
+	vccio3-supply = <&vcc_io>;
+	vccio4-supply = <&vcc_18>;
+	vccio5-supply = <&vcc_io>;
+	vccio6-supply = <&vcc_io>;
+	status = "okay";
+};
+
+
+// The on-board bluetooth chip is connected to UART0
+&uart0 {
+	// Only use xfer pins as no RTS/CTS lines are traced out from the SoM
+	pinctrl-0 = <&uart0_xfer>;
+    status = "okay";
+};
+
+// The on-board Z-wave chip is connected to UART1
+&uart1 {
+	// Only use xfer pins as no RTS/CTS lines are traced out from the SoM
+	pinctrl-0 = <&uart1_xfer>;
+    status = "okay";
+};
+
+// UART2 is the debug UART.
+&uart2 {
+    status = "okay";
+};
+
+&gpu {
+    mali-supply = <&vdd_logic>;
+    status = "disabled";
+};
+
+&vpu {
+	vcodec-supply = <&vdd_logic>;
+	status = "disabled";
+};
+
+&grf {
+	reboot-mode {
+		mode-maskrom = <0xEF08A53C>;
+		mode-ums = <0x5242C30C>;
+	};
+};
+
+&pinctrl {
+	pmic {
+		pmic_int_l: pmic-int-l { 
+			rockchip,pins = <2 RK_PA6 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+
+		pmic_sleep_l: pmic-sleep-l {
+			rockchip,pins = <2 RK_PD2 RK_FUNC_GPIO &pcfg_pull_down>;
+			// This SoM pin (PMIC_SLEEP) is not connected to anything on the board
+		};
+	};
+
+	efr32bg22-pins {
+		onboard_efr32bg22_powered: onboard-efr32bg22-powered {
+			rockchip,pins = <2 RK_PC1 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+
+		onboard_efr32bg22_unpowered: onboard-efr32bg22-unpowered {
+			rockchip,pins = <2 RK_PC1 RK_FUNC_GPIO &pcfg_output_low>;
+		};
+
+		onboard_efr32bg22_reset: onboard-efr32bg22-reset {
+			// Default reset line state is being pulled up by the chip
+			rockchip,pins = <2 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	efr32mg12-pins {
+		onboard_efr32mg12_powered: onboard-efr32mg12-powered {
+			rockchip,pins = <1 RK_PA5 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+
+		onboard_efr32mg12_unpowered: onboard-efr32mg12-unpowered {
+			rockchip,pins = <1 RK_PA5 RK_FUNC_GPIO &pcfg_output_low>;
+		};
+		
+		onboard_efr32mg12_pa4: onboard-efr32mg12-pa4 {
+			// Clarification: pa4 here refers to pin/pad on the efr32mg12 
+			rockchip,pins = <1 RK_PA3 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		onboard_efr32mg12_reset: onboard-efr32mg12-reset {
+			// Default reset line state is being pulled up by the chip
+			rockchip,pins = <1 RK_PA0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	zgm130s-pins {
+		onboard_zgm130s_powered: onboard-zgm130s-powered {
+			rockchip,pins = <2 RK_PB7 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+
+		onboard_zgm130s_unpowered: onboard-zgm130s-unpowered {
+			rockchip,pins = <2 RK_PB7 RK_FUNC_GPIO &pcfg_output_low>;
+		};
+
+		onboard_zgm130s_reset: onboard-zgm130s-reset {
+			// Default reset line state is being pulled up by the chip
+			rockchip,pins = <3 RK_PA7 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+	
+	function-button {
+		function_button: function_button {
+			// Active-low, externally pulled up
+			rockchip,pins = <3 RK_PA0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+};
+

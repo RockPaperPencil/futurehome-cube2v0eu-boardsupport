@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/* 
+ * This overlay disables the device tree entry for the regulator supplying power
+ * to the onboard Zen Gecko (ZGM130S), thereby leaving all management of it
+ * completely to userspace/gpioset ("manual control mode").
+ * The default non-overlayed device tree ensures that the chip is kept off by 
+ * defining GPIO2_B7 as being active-low instead of active-high, hence this 
+ * overlay to totally remove any hogging of GPIO2_B7. 
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target = <&onboard_zgm130s>;
+        status = "disabled";
+    };
+};

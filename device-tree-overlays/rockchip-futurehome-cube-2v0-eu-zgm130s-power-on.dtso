@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/* 
+ * Enable the Zen Gecko (ZGM130S) Z-Wave Series 700 chip in the Futurehome
+ * cube-2v0-eu by supplying power to it and making sure that the reset line is
+ * properly configured. Split out to an overlay because it might not be
+ * desirable to automatically enable the chip on boot in all scenarios.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+
+/ {
+    fragment@0 {
+        target = <&onboard_zgm130s>;
+        __overlay__ {
+            enable-active-high;
+    		gpio = <&gpio2 RK_PB7 GPIO_ACTIVE_HIGH>;
+            pinctrl-0 = <&onboard_zgm130s_powered>,
+                       <&onboard_zgm130s_reset>;
+        };
+    };
+};

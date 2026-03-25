@@ -1,0 +1,11 @@
+[Unit]
+Description=Case LED indication of shutoff
+Before=shutdown.target
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=bash -c "i2ctransfer -y 0 w2@0x23 0x2 0x0 w2@0x23 0x3 0x0 w2@0x23 0x4 0x0 w2@0x23 0x5 0x0; while [ \"$(systemctl is-active 'umount.target')\" != 'active' ]; do sleep 0.5 && i2ctransfer -y 0 w2@0x23 0x4 0x16 w2@0x23 0x5 0x13 && sleep 0.5 && i2ctransfer -y 0 w2@0x23 0x4 0x0 w2@0x23 0x5 0x0; done;"
+
+[Install]
+WantedBy=poweroff.target halt.target
