@@ -10,12 +10,12 @@ into consideration anything presented.
 * RK3328 SoC
 * 2 gigabytes of RAM
 * 8 gigabytes of eMMC storage
-* 100mbit ethernet using the RK3328 built-in PHY, external PHY for the rk3328 gigabit MAC omitted from the board design
-* 1x USB-C port for powering the system, also wired up data (480mbit/s USB2)  
-* 1x USB type A port (USB3)
+* 100mbit ethernet using the RK3328 built-in PHY, an external PHY for using the rk3328 gigabit MAC is not included in the board design
+* 1x USB-C port for powering the system (480mbit/s USB2, OTG capable)
+* 1x USB type A port (USB3 5gbit/s in host mode, 480mbit/s in OTG mode)
 * On-board GL850G USB 2.0 hub controller chip, used to connect on-board USB-to-UART bridges
 * Battery backed PCF85063ATT RTC connected to the I2C1 bus
-* EFR32MG12 module connected through USB<->UART bridge (CP2102N)
+* EFR32MG12 module connected to CP2102N USB<->UART bridge
 * EFR32BG22 module connected to SoM UART0 (no CTS/RTS)
 * ZGM130S module connected to SoM UART1 (no CTS/RTS)
 * RGBW LED module, driven by a TM1929 LED driver chip.
@@ -98,14 +98,14 @@ the SoM in a data sheet accessible through their website. Note that many pins ar
 not used at all in the cube-2v0-eu board design.
 
 ## Utilizing the case light
-The device features has a RGBW LED module, which shines light through a bit of
+The device features a RGBW LED module, which shines its light through a bit of
 clear-ish plastic towards a corner of the logo on the outside of the case.
 It is wired to a TM1929 LED driver, which is made by Titan Micro Electronics.
 
 The LED driver chip accepts commands through the I2C0 bus, utilizing the i2c 
 address 0x23. There are no drivers for abstracting interactions with this chip,
 it must be controlled by sending I2C commands either with the **i2c** command
-in u-boot, or with the **i2ctransfer** program in Linux.
+in U-Boot, or with the **i2ctransfer** program in Linux.
 
 ### Example command in Linux:
 ```shell
@@ -120,7 +120,7 @@ i2ctransfer -y 0 w2@0x23 0x4 0x0
 * "0x4" is the identifier/address of the register that we will be writing to.
 * "0x1" is the value we will be writing to said register.
 
-### Example command in u-boot:
+### Example command in U-Boot:
 ```shell
 i2c bus 0
 i2c mw 0x23 0x4 0x6
