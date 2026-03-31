@@ -31,10 +31,31 @@ utility with an argument of **rd 3** where *rd* means "reset device" and *3* mea
 "into maskrom mode".
 Next up is running **rkdeveloptool db \[name-of-your-bootloader-file\]** which
 will essentially upload a bootloader file from a computer into the memory of the
-device and run it. This can for example be a U-Boot build which has been 
-configured to present the eMMC storage of the smarthub as a USB storage device
-to a computer, or a "usbplug" image which has traditionally been used to flash
-software onto rockchip devices.
+device and run it. This can be the traditional "usbplug" image which has been
+the go-to solution for flashing software onto rockchip devices, or other bootloaders.
+
+## Rambooted U-Boot
+After [some time](https://source.denx.de/u-boot/contributors/kwiboo/u-boot/-/commits/ramboot-v1) [in the](https://source.denx.de/u-boot/contributors/kwiboo/u-boot/-/commits/ramboot-v2) [making](https://source.denx.de/u-boot/contributors/kwiboo/u-boot/-/commits/ramboot-v3), U-Boot v2026.01 introduced a feature for Rockchip devices called *ramboot* which makes it possible
+to load an U-Boot image into RAM and run it from there (just like the "usbplug")
+using *rkdeveloptool*.
+
+This repository provides a Makefile, *cube2v0-usb-mass-storage-rambootloader.make*,
+which orchestrates the building of a ramboot-enabled U-Boot for the Futurehome
+cube-2v0-eu, configured to automatically enter USB Mass Storage (UMS) mode
+using the USB-C port.
+
+Essentially, the internal storage of the smarthub will be presented to a host
+computer as a USB storage device, similar to how the cube-1 microUSB port
+allows access to the eMMC storage of that device.
+
+### Building ramboot-enabled U-Boot
+Aarch64 cross compilation toolchain needs to be present on the system, in
+addition to standard tools like *make*, *git* and *install*. From there, it
+should just be a matter of running *make*, specifying the makefile to use: 
+
+```sh
+make -f cube2v0-usb-mass-storage-rambootloader.make
+```
 
 ## U-Boot mode selection script
 The contents of **futurehome-cube-2v0-eu-bootmode-script.cmd** is intended to 
