@@ -5,7 +5,7 @@ and/or work differently than described. You assume full responsibility for any
 risks, injuries, damages or other consequences that may result from even taking
 into consideration anything presented.
 
-## Cube-2v0 highlights
+## Hardware highlights
 * Built around the [Dusun DSOM-010R System-on-Module](https://www.dusuniot.com/product/dsom-010r-rk3328-som/) ("SoM")
 * RK3328 SoC
 * 2 gigabytes of RAM
