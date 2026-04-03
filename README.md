@@ -23,39 +23,39 @@ into consideration anything presented.
 * CH340g USB<->UART bridge, accessible via test points and solder pads (CFG_UART_*).
 
 ## Entering Maskrom mode on a stock system
-The factory installed U-Boot will enter loader mode and be visible over USB to a
-computer if the function button is pressed when the device is starting to boot.
-Typically this means holding the function button as the USB-C cable is inserted.
-The device can then be rebooted into Maskrom mode using the **rkdeveloptool**
-utility with an argument of **rd 3** where *rd* means "reset device" and *3* means
-"into maskrom mode".
-Next up is running **rkdeveloptool db \[name-of-your-bootloader-file\]** which
-will essentially upload a bootloader file from a computer into the memory of the
-device and run it. This can be the traditional "usbplug" image which has been
-the go-to solution for flashing software onto rockchip devices, or other bootloaders.
+The factory installed U-Boot will enter loader (not maskrom) mode and be visible
+over USB to a computer if the function button is pressed when the device is 
+starting to boot. Typically this means holding the function button as the USB-C
+cable is inserted. The device can then be rebooted into maskrom mode using the 
+[rkdeveloptool](https://github.com/rockchip-linux/rkdeveloptool) utility with an
+argument of **rd 3** where *rd* means "reset device" and *3* means "into maskrom
+mode". Next up is running **rkdeveloptool db \[name-of-bootloader-file.bin\]** which
+will essentially upload a bootloader binary from your computer into the memory of
+the device and run it.
 
-## Rambooted U-Boot
+## Building loaders for use with maskrom mode
+This repository provices a makefile which orchestrates building of the following
+loaders for the cube-2v0-eu:
+* cube2v0eu-maskrom-usbplug-loader.bin
+* cube2v0eu-maskrom-uboot-ums.bin
+
+Standard tools like *wget*, *make*, *git* and *install* needs to be present on 
+the system. The cube2v0eu-maskrom-uboot-ums.bin target needs aarch64 cross 
+compilation toolchain. If the needed tools are present on the system, building 
+the loaders should just be a matter of running *make*.
+
+### cube2v0eu-maskrom-usbplug-loader.bin
+This target builds the traditional "usbplug" loader which allows the 
+*rkdeveloptool wl* command to work.
+
+### cube2v0eu-maskrom-uboot-ums.bin
 After [some time](https://source.denx.de/u-boot/contributors/kwiboo/u-boot/-/commits/ramboot-v1) [in the](https://source.denx.de/u-boot/contributors/kwiboo/u-boot/-/commits/ramboot-v2) [making](https://source.denx.de/u-boot/contributors/kwiboo/u-boot/-/commits/ramboot-v3), U-Boot v2026.01 introduced a feature for Rockchip devices called *ramboot* which makes it possible
 to load an U-Boot image into RAM and run it from there (just like the "usbplug")
 using *rkdeveloptool*.
-
-This repository provides a Makefile, *cube2v0-usb-mass-storage-rambootloader.make*,
-which orchestrates the building of a ramboot-enabled U-Boot for the Futurehome
-cube-2v0-eu, configured to automatically enter USB Mass Storage (UMS) mode
-using the USB-C port.
-
-Essentially, the internal storage of the smarthub will be presented to a host
-computer as a USB storage device, similar to how the cube-1 microUSB port
-allows access to the eMMC storage of that device.
-
-### Building ramboot-enabled U-Boot
-Aarch64 cross compilation toolchain needs to be present on the system, in
-addition to standard tools like *make*, *git* and *install*. From there, it
-should just be a matter of running *make*, specifying the makefile to use: 
-
-```sh
-make -f cube2v0-usb-mass-storage-rambootloader.make
-```
+The cube2v0eu-maskrom-uboot-ums.bin target builds an image which upon starting
+makes the internal eMMC storage of the smarthub available to a host computer as
+a regular USB storage device, similar to how the cube-1v* microUSB port allows
+access to the eMMC storage of that device.
 
 ## U-Boot mode selection script
 The contents of **futurehome-cube-2v0-eu-bootmode-script.cmd** is intended to 
