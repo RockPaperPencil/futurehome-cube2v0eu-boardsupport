@@ -1,5 +1,6 @@
 # U-Boot script for handling (re)booting the Futurehome cube-2v0-eu into various
-# modes other than an installed operating system.
+# modes, authored by github.com/RockPaperPencil. The following licence header
+# applies to the cube2v0-specific script portion if the script is included in other files.
 # SPDX-License-Identifier: GPL-2.0+
 
 # Select the I2C0 bus as that is where the LED driver is attached and turn off
